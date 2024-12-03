@@ -10,7 +10,11 @@ try:
     from sklearn.preprocessing import MinMaxScaler  # pip install scikit-learn
     import matplotlib.pyplot as plt         # pip install matplotlib
     import plotly.graph_objects as plgo     # pip insall plotly
+
 except ImportError:
+    # activate the conda venv 
+    subprocess.check_call(["conda", "activate", "lit"])    
+    # install the required packages
     subprocess.check_call([sys.executable, "-m", "pip", "install", "streamlit"])
     subprocess.check_call([sys.executable, "-m", "pip", "install", "yfinance"])
     subprocess.check_call([sys.executable, "-m", "pip", "install", "pandas"])
