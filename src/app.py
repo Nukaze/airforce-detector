@@ -1,5 +1,7 @@
 import subprocess
 import sys
+import appdirs as ad
+ad.user_cache_dir = lambda *args: "/tmp"
 try:
     import streamlit as st                  # pip install streamlit
     import yfinance as yf                   # pip install yfinance
@@ -13,10 +15,11 @@ try:
 
 except ImportError:
     # activate the conda venv 
-    subprocess.check_call(["conda", "activate", "lit"])    
+    # subprocess.check_call([sys.executable, "conda", "activate", "lit"])  
     # install the required packages
     subprocess.check_call([sys.executable, "-m", "pip", "install", "streamlit"])
     subprocess.check_call([sys.executable, "-m", "pip", "install", "yfinance"])
+    import yfinance as yf
     subprocess.check_call([sys.executable, "-m", "pip", "install", "pandas"])
     subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy"])
     subprocess.check_call([sys.executable, "-m", "pip", "install", "tensorflow"])
@@ -25,7 +28,6 @@ except ImportError:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "plotly"])
     
     import streamlit as st
-    import yfinance as yf
     import pandas as pd
     import numpy as np
     import tensorflow as tf
