@@ -1,8 +1,8 @@
 import subprocess
 import sys
-import appdirs as ad
-ad.user_cache_dir = lambda *args: "/tmp"
 try:
+    import appdirs as ad
+    ad.user_cache_dir = lambda *args: "/tmp"
     import streamlit as st                  # pip install streamlit
     import yfinance as yf                   # pip install yfinance
     import pandas as pd
@@ -17,6 +17,11 @@ except ImportError:
     # activate the conda venv 
     # subprocess.check_call([sys.executable, "conda", "activate", "lit"])  
     # install the required packages
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "appdirs"])
+    import appdirs as ad
+    ad.user_cache_dir = lambda *args: "/tmp"
+    
+    
     subprocess.check_call([sys.executable, "-m", "pip", "install", "streamlit"])
     subprocess.check_call([sys.executable, "-m", "pip", "install", "yfinance"])
     import yfinance as yf
