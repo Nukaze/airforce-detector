@@ -1,38 +1,12 @@
-import subprocess
-import sys
-try:
-    import streamlit as st                  # pip install streamlit
-    import yfinance as yf                   # pip install yfinance
-    import pandas as pd
-    import numpy as np
-    import tensorflow as tf                 # pip install tensorflow 
-    from tensorflow.keras.models import load_model
-    from sklearn.preprocessing import MinMaxScaler  # pip install scikit-learn
-    import matplotlib.pyplot as plt         # pip install matplotlib
-    import plotly.graph_objects as plgo     # pip insall plotly
-
-except ImportError:
-    # install the required packages
-    # subprocess.check_call([sys.executable, "-m", "pip", "install", "streamlit"])
-    # subprocess.check_call([sys.executable, "-m", "pip", "install", "yfinance"])
-    # subprocess.check_call([sys.executable, "-m", "pip", "install", "pandas"])
-    # subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy"])
-    # subprocess.check_call([sys.executable, "-m", "pip", "install", "tensorflow"])
-    # subprocess.check_call([sys.executable, "-m", "pip", "install", "scikit-learn"])
-    # subprocess.check_call([sys.executable, "-m", "pip", "install", "matplotlib"])
-    # subprocess.check_call([sys.executable, "-m", "pip", "install", "plotly"])
-    
-    # import streamlit as st
-    # import pandas as pd
-    # import numpy as np
-    # import yfinance as yf
-    # import tensorflow as tf
-    # from tensorflow.keras.models import load_model
-    # from sklearn.preprocessing import MinMaxScaler
-    # import matplotlib.pyplot as plt
-    # import plotly.graph_objects as plgo
-    pass
-
+import streamlit as st                  # pip install streamlit
+import yfinance as yf                   # pip install yfinance
+import pandas as pd
+import numpy as np
+import tensorflow as tf                 # pip install tensorflow 
+from tensorflow.keras.models import load_model
+from sklearn.preprocessing import MinMaxScaler  # pip install scikit-learn
+import matplotlib.pyplot as plt         # pip install matplotlib
+import plotly.graph_objects as plgo     # pip insall plotly
 
 import time
 
