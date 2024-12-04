@@ -13,24 +13,25 @@ try:
 
 except ImportError:
     # install the required packages
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "streamlit"])
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "yfinance"])
-    import yfinance as yf
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "pandas"])
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy"])
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "tensorflow"])
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "scikit-learn"])
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "matplotlib"])
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "plotly"])
+    # subprocess.check_call([sys.executable, "-m", "pip", "install", "streamlit"])
+    # subprocess.check_call([sys.executable, "-m", "pip", "install", "yfinance"])
+    # subprocess.check_call([sys.executable, "-m", "pip", "install", "pandas"])
+    # subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy"])
+    # subprocess.check_call([sys.executable, "-m", "pip", "install", "tensorflow"])
+    # subprocess.check_call([sys.executable, "-m", "pip", "install", "scikit-learn"])
+    # subprocess.check_call([sys.executable, "-m", "pip", "install", "matplotlib"])
+    # subprocess.check_call([sys.executable, "-m", "pip", "install", "plotly"])
     
-    import streamlit as st
-    import pandas as pd
-    import numpy as np
-    import tensorflow as tf
-    from tensorflow.keras.models import load_model
-    from sklearn.preprocessing import MinMaxScaler
-    import matplotlib.pyplot as plt
-    import plotly.graph_objects as plgo
+    # import streamlit as st
+    # import pandas as pd
+    # import numpy as np
+    # import yfinance as yf
+    # import tensorflow as tf
+    # from tensorflow.keras.models import load_model
+    # from sklearn.preprocessing import MinMaxScaler
+    # import matplotlib.pyplot as plt
+    # import plotly.graph_objects as plgo
+    pass
 
 
 import time
