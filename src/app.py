@@ -12,6 +12,8 @@ import time
 
 BRANDING = """Stock LUMINA"""
 
+MODEL = None
+
 
 def pre_config() -> None:
     print("\nstreamlit version: ",st.__version__)
@@ -32,7 +34,7 @@ def pre_config() -> None:
 
 
 
-def get_stock_data(ticker: str, interval = "1d", period = "") -> pd.DataFrame:
+def get_stock_data(ticker: str, interval = "1d", _period = "") -> pd.DataFrame:
     max_period = {
         "1m": "max",
         "5m": "max",
@@ -45,14 +47,17 @@ def get_stock_data(ticker: str, interval = "1d", period = "") -> pd.DataFrame:
         "3mo": "10y"
     }
     period = max_period[interval]
-    if (period):
-        period = period
+    if (_period):
+        period = _period
     try:
         data: pd.DataFrame = yf.download(ticker, period=period, interval=interval)
         if data.empty:
-            st.write(data)
-            st.error(f"""`[{ticker}] data not found! with period: {period} and interval: {interval}`""")
-            return
+            # try with different period
+            data = yf.download(ticker, interval=interval)
+            if data.empty:
+                st.error(f"""`[{ticker}] data not found! with interval: {interval}`""")
+                return None
+            
         # """ example of multi-index columns from yfinance
         # MultiIndex([('Adj Close', 'AMZN'),
         #     (    'Close', 'AMZN'),
@@ -64,6 +69,7 @@ def get_stock_data(ticker: str, interval = "1d", period = "") -> pd.DataFrame:
         # """
         # flatten the multi-index columns
         data.columns = [f"{col[0]}" for col in data.columns.to_flat_index()]
+        return data
 
     except Exception as e:
         st.error(f"""`[{ticker}] data not found!\nPlease select another company.`""")
@@ -73,7 +79,7 @@ def get_stock_data(ticker: str, interval = "1d", period = "") -> pd.DataFrame:
             {e}
             ```
             """)
-    return data
+        return None
 
 
 
@@ -97,8 +103,10 @@ def predict_stock_price(stock_data, model, lastdays = 30):
 
 
 def load_lstm_model(company: str):
-    model = load_model(f"./model/lumina_{company}.h5")
-    return model
+    with st.spinner("Loading LSTM model.."):
+        time.sleep(.2)
+        model = load_model(f"./model/lumina_{company}.h5")
+        return model
 
 
 
@@ -145,11 +153,12 @@ def main() -> None:
     
     # get lstm model
     try:
-        model = load_lstm_model(ticker_company)
+        global MODEL
+        MODEL = load_lstm_model(ticker_company)
         # todo temporary display for 5 seconds
         success_message = st.sidebar.empty()
         success_message.success(f"`Model loaded successfully!`", icon="✅")
-        time.sleep(5)
+        time.sleep(3)
         success_message.empty()
         
     except Exception as e:
@@ -175,28 +184,66 @@ def main() -> None:
 
     if (interval != new_interval):
         interval = new_interval
-        stock_data = get_stock_data(ticker_company, interval=interval)
+        with st.spinner("Fetching stock data.."):
+            time.sleep(.5)
+            stock_data = get_stock_data(ticker_company, interval=interval)
     
     
     try:
-        # st.dataframe(stock_data)
-        # plot the stock data into a graph
-        fig = plgo.Figure()
-        fig.add_trace(plgo.Scatter(
-            x=stock_data.index, 
-            y=stock_data["Close"],
-            mode="lines", 
-            name="Close Price"))
-        
-        fig.update_layout(
-            title=f"Stock Price Graph",
-            xaxis_title="Date & Time",
-            yaxis_title="Price",
-            xaxis_rangeslider_visible=True
-        )
-        
-        
-        st.plotly_chart(fig, use_container_width=True)
+        # Ensure stock data is valid
+        if stock_data is None or stock_data.empty:
+            st.write("Stock data not available right now!")
+            st.error("Failed to fetch stock data!")
+            return
+
+        # Display the figure in Streamlit
+        with st.spinner("Plotting the data.."):
+            time.sleep(1.2)
+            # Create the plotly figure
+            fig = plgo.Figure()
+
+            # Add line chart for closing price
+            fig.add_trace(plgo.Scatter(
+                x=stock_data.index, 
+                y=stock_data["Close"], 
+                mode="lines", 
+                name="Close Price",
+                yaxis="y1"  # Link to primary y-axis
+            ))
+
+            # Add bar chart for volume
+            fig.add_trace(plgo.Bar(
+                x=stock_data.index, 
+                y=stock_data["Volume"], 
+                name="Volume", 
+                opacity=[.4, .2][timeframes.index(interval) > len(timeframes) * .7],
+                marker=dict(color="yellow"),
+                yaxis="y2"  # Link to secondary y-axis
+            ))
+            
+            # Update layout to define dual axes
+            fig.update_layout(
+                title=f"{ticker_company} Stock",
+                xaxis=dict(title="Date & Time"),
+                yaxis=dict(
+                    title="Price (USD)", 
+                    titlefont=dict(color="blue"), 
+                    tickfont=dict(color="blue")
+                ),
+                yaxis2=dict(
+                    title="Volume (in Millions)", 
+                    titlefont=dict(color="yellow"), 
+                    tickfont=dict(color="yellow"),
+                    anchor="x", 
+                    overlaying="y", 
+                    side="right"
+                ),
+                legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5),
+                xaxis_rangeslider_visible=True,
+                template="plotly_dark"  # Optional dark theme
+            )
+
+            st.plotly_chart(fig, use_container_width=True)
         
     except Exception as e:
         st.write("Stock data not available right now!")
