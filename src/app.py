@@ -32,13 +32,25 @@ def pre_config() -> None:
 
 
 
-def get_stock_data(ticker: str, period = "10y", interval = "1d") -> pd.DataFrame:
-    day = "1d"
-    month = "1mo"
-    year = "1y"
+def get_stock_data(ticker: str, interval = "1d", period = "") -> pd.DataFrame:
+    max_period = {
+        "1m": "max",
+        "5m": "max",
+        "15m": "max",
+        "1h": "max",
+        "1d": "10y",
+        "5d": "10y",
+        "1wk": "10y",
+        "1mo": "10y",
+        "3mo": "10y"
+    }
+    period = max_period[interval]
+    if (period):
+        period = period
     try:
         data: pd.DataFrame = yf.download(ticker, period=period, interval=interval)
         if data.empty:
+            st.write(data)
             st.error(f"""`[{ticker}] data not found! with period: {period} and interval: {interval}`""")
             return
         # """ example of multi-index columns from yfinance
@@ -104,14 +116,32 @@ def main() -> None:
     st.markdown(f"<h1>Stock <span style='color: #f4ff33;'>LUMINA</span></h1>", unsafe_allow_html=True)
     st.write("This is a simple stock price prediction app using LSTM model.")
     
+
+    
     # company selection
     st.sidebar.title("Company Selection")
     company_data = ["AAPL", "GOOGL", "AMZN", "MSFT", "TSLA", "NVDA"]
-    
+
     ticker_company = st.sidebar.selectbox("Select the company", sorted(company_data))
     
+    # timeframes
+    interval_mapping = {
+        "1m": "1m",
+        "5m": "5m",
+        "15m": "15m",
+        "1h": "1h",
+        "1d": "1d",
+        "5d": "5d",
+        "1wk": "1wk",
+        "1mo": "1mo",
+        "3mo": "3mo"
+    }
+    timeframes = list(interval_mapping.keys())
+    interval = interval_mapping["1d"]       # default interval
+    
     # fetch stock data from yfinance
-    stock_data = get_stock_data(ticker_company)
+    stock_data = get_stock_data(ticker_company, interval=interval)
+    
     
     # get lstm model
     try:
@@ -130,14 +160,26 @@ def main() -> None:
             {e}
             ```
             """)    
+
+
     
     last_price_close = stock_data.iloc[-1]['Close']
     st.title(f"""`{ticker_company}` ___~___ **{last_price_close:.2f}**""")
     st.write(f"""**{stock_data['Close'].index[0].date()}** to **{stock_data['Close'].index[-1].date()}**""")
-    st.write(stock_data)
+    st.dataframe(stock_data)
+    
+    # interface
+    st.markdown(f"<h3><span style='color: #f4ff33;'>{ticker_company}</span> Stock Data Visualization</h3>", unsafe_allow_html=True)
+    selected_timeframe = st.segmented_control("Select the timeframe", timeframes, default="1d")
+    new_interval = interval_mapping[selected_timeframe]
+
+    if (interval != new_interval):
+        interval = new_interval
+        stock_data = get_stock_data(ticker_company, interval=interval)
     
     
     try:
+        # st.dataframe(stock_data)
         # plot the stock data into a graph
         fig = plgo.Figure()
         fig.add_trace(plgo.Scatter(
@@ -153,10 +195,11 @@ def main() -> None:
             xaxis_rangeslider_visible=True
         )
         
-        st.markdown(f"<h3><span style='color: #f4ff33;'>{ticker_company}</span> Stock Data Visualization</h3>", unsafe_allow_html=True)
+        
         st.plotly_chart(fig, use_container_width=True)
         
     except Exception as e:
+        st.write("Stock data not available right now!")
         st.error("Failed to plot the data!")
         st.warning(
             f"""
