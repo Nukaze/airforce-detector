@@ -159,3 +159,5 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 data/yahoo_massive_stock_data_2018-2023_preprocessed.csv
+data/archive_aircraft.zip
+/data/archive_aircraft
