@@ -84,24 +84,30 @@ def get_stock_data(ticker: str, interval = "1d", _period = "") -> pd.DataFrame:
 
 
 def predict_stock_price(stock_data, model, lastdays = 30):
-    scaler = MinMaxScaler(feature_range=(0,1))
-    data_scaled = scaler.fit_transform(stock_data["Close"])
+    # Get the last 'lastdays' closing prices
+    prediction_input = stock_data["Close"].values[-lastdays:]
+    prediction_input = np.array(prediction_input).reshape(-1, 1)
     
-    # prepare the data for prediction (last N days)
+    # Scale the data between 0 and 1 using MinMaxScaler
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    data_scaled = scaler.fit_transform(prediction_input)  # Reshape for scaling
+    
+    # Prepare data for prediction (using the last 'lastdays' closing prices)
     x_test = []
     for i in range(lastdays, len(data_scaled)):
-        x_test.append(data_scaled[i-lastdays:i,0])
-
+        x_test.append(data_scaled[i-lastdays : i, 0])  # Collect the last 'lastdays' data closing prices
+        
     x_test = np.array(x_test)
-    x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
+    x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))  # Reshape to (samples, time_steps, features)
     
-    # make the prediction
+    # Make the prediction
     predicted_price = model.predict(x_test)
-    predicted_price = scaler.inverse_transform(predicted_price)
-    return predicted_price
+    predicted_price = scaler.inverse_transform(predicted_price)  # Convert back to original scale (USD)
+    
+    return predicted_price  # Returns the predicted price (in original scale)
 
 
-
+@st.cache_resource
 def load_lstm_model(company: str):
     with st.spinner("Loading LSTM model.."):
         time.sleep(.2)
@@ -173,7 +179,7 @@ def main() -> None:
 
     
     last_price_close = stock_data.iloc[-1]['Close']
-    st.title(f"""`{ticker_company}` ___~___ **{last_price_close:.2f}**""")
+    st.title(f"""`{ticker_company}` ___~___ **{last_price_close:.2f} USD**""")
     st.write(f"""**{stock_data['Close'].index[0].date()}** to **{stock_data['Close'].index[-1].date()}**""")
     st.dataframe(stock_data)
     
@@ -187,6 +193,22 @@ def main() -> None:
         with st.spinner("Fetching stock data.."):
             time.sleep(.5)
             stock_data = get_stock_data(ticker_company, interval=interval)
+    
+    
+    # Prediction Section
+    st.markdown("Predict the Next Day's Closing Price")
+    if st.button("Predict Next Day"):
+        try:
+            # Prepare data for prediction (last 30 days by default)
+            last_days = 30
+            predicted_price = predict_stock_price(stock_data, MODEL, lastdays=last_days)
+            st.success(f"Predicted Closing Price for {ticker_company} (Next Day): **{predicted_price[-1][0]:.2f} USD**")
+        
+        except Exception as e:
+            st.error("Prediction failed!")
+            st.warning(f"Error details: {e}")
+    
+    
     
     
     try:
