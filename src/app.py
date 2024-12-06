@@ -27,7 +27,7 @@ def pre_config() -> None:
     st.set_page_config(
         page_title=f"{BRANDING} - AI Prediction",
         page_icon=graph_monitoring_google_icon,
-        layout="wide",
+        layout="centered",
         initial_sidebar_state="expanded",
     )
     return
@@ -68,7 +68,8 @@ def get_stock_data(ticker: str, interval = "1d", _period = "") -> pd.DataFrame:
         #     names=['Price', 'Ticker'])
         # """
         # flatten the multi-index columns
-        data.columns = [f"{col[0]}" for col in data.columns.to_flat_index()]
+        if (isinstance(data.columns, pd.MultiIndex)):
+            data.columns = [f"{col[0]}" for col in data.columns.to_flat_index()]
         return data
 
     except Exception as e:
@@ -82,29 +83,46 @@ def get_stock_data(ticker: str, interval = "1d", _period = "") -> pd.DataFrame:
         return None
 
 
+def prepare_data_for_prediction(stock_data, scaler, time_steps = 30):
+    features = [
+        "Close", 
+        "MA_7", 
+        "MA_14", 
+        "MA_30", 
+        "EMA_7", 
+        "EMA_14", 
+        "EMA_30", 
+        "RSI", 
+    ]
+    # ensure the data has the required features
+    stock_data = stock_data[features]
+    
+    # scale the data using same scaler
+    scaled_data = scaler.transform(stock_data)
+    
+    x = []
+    x.append(scaled_data[-time_steps:, :])
+    return np.array(x)
 
-def predict_stock_price(stock_data, model, lastdays = 30):
-    # Get the last 'lastdays' closing prices
-    prediction_input = stock_data["Close"].values[-lastdays:]
-    prediction_input = np.array(prediction_input).reshape(-1, 1)
+
+def predict_stock_price(stock_data, model, scaler, time_steps=30):
+    # Prepare the data for prediction using the last `time_steps` days
+    prediction_input = stock_data[["Close", "MA_7", "MA_14", "MA_30", "EMA_7", "EMA_14", "EMA_30", "RSI"]].values[-time_steps:]
     
-    # Scale the data between 0 and 1 using MinMaxScaler
-    scaler = MinMaxScaler(feature_range=(0, 1))
-    data_scaled = scaler.fit_transform(prediction_input)  # Reshape for scaling
+    # Scale the data using the same scaler that was used during training
+    scaled_input = scaler.transform(prediction_input)
     
-    # Prepare data for prediction (using the last 'lastdays' closing prices)
-    x_test = []
-    for i in range(lastdays, len(data_scaled)):
-        x_test.append(data_scaled[i-lastdays : i, 0])  # Collect the last 'lastdays' data closing prices
-        
-    x_test = np.array(x_test)
-    x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))  # Reshape to (samples, time_steps, features)
+    # Reshape to match LSTM input shape (samples, time_steps, features)
+    x_input = np.reshape(scaled_input, (1, time_steps, scaled_input.shape[1]))
     
-    # Make the prediction
-    predicted_price = model.predict(x_test)
-    predicted_price = scaler.inverse_transform(predicted_price)  # Convert back to original scale (USD)
+    # Make prediction
+    predicted_price = model.predict(x_input)
     
-    return predicted_price  # Returns the predicted price (in original scale)
+    # Inverse scale the predicted price (back to original scale)
+    predicted_price = scaler.inverse_transform(np.hstack((predicted_price, np.zeros((predicted_price.shape[0], scaled_input.shape[1]-1)))))[:, 0]
+    
+    return predicted_price  # Return the predicted closing price (in original scale)
+
 
 
 @st.cache_resource
@@ -201,7 +219,9 @@ def main() -> None:
         try:
             # Prepare data for prediction (last 30 days by default)
             last_days = 30
-            predicted_price = predict_stock_price(stock_data, MODEL, lastdays=last_days)
+            st.markdown(stock_data)
+            scaler = MinMaxScaler(feature_range=(0, 1))
+            predicted_price = predict_stock_price(stock_data, MODEL, scaler, lastdays=last_days)
             st.success(f"Predicted Closing Price for {ticker_company} (Next Day): **{predicted_price[-1][0]:.2f} USD**")
         
         except Exception as e:
