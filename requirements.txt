@@ -10,3 +10,4 @@ ultralytics
 opencv-python
 kagglehub
 joblib
+opencv-python-headless
