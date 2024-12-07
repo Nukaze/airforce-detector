@@ -11,7 +11,10 @@ from ultralytics import YOLO
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 
-ROOT = os.getcwd()
+LOCAL_ROOT = os.getcwd()
+
+DEPLOYMENT_ROOT = os.path.dirname(os.path.abspath(__file__))
+
 
 def pre_config() -> None:
     print("\nstreamlit version: ",st.__version__)
@@ -38,7 +41,13 @@ def load_image_from_url(url):
     
 # Function to perform object detection on the image
 def yolo_detect_objects(image):
-    model = YOLO("../model/yolov8m_0883_best.pt").to("cpu")
+    model_path = os.path.join(LOCAL_ROOT, "model/yolov8m_0883_best.pt")
+    model = YOLO(model_path)
+    try:
+        model.to("cuda")
+    except Exception as e:
+        model.to("cpu")
+        
     results = model(image, conf=.25, show=False, stream=False)  # Perform detection
     annotated_image_bgr = results[0].plot()  # Get annotated image
     # convert the annotated image to PIL format bgr to rgb
@@ -78,7 +87,7 @@ def tensorflow_detect_objects(image, top_k=10):
     try:
         # model_path_relative = "model/warden_0896.h5"
         model_path_relative = "model/warden_0726.h5"
-        model_path_full = os.path.join(ROOT, model_path_relative)
+        model_path_full = os.path.join(LOCAL_ROOT, model_path_relative)
         model = load_model(model_path_full)
     except Exception as e:
         st.warning(f"Please try again.")
