@@ -7,7 +7,8 @@ scikit-learn
 streamlit
 matplotlib
 ultralytics
-opencv-python
 kagglehub
 joblib
+opencv-python
 opencv-python-headless
+dill
