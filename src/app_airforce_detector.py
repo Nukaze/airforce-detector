@@ -85,7 +85,8 @@ def tensorflow_aircraft_class_names():
 
 def tensorflow_detect_objects(image, top_k=10):
     try:
-        model_path_relative = "model/AvinashNath2_rmsprop_02449.h5"
+        model_path_relative = "model/afdet_rmsprop_02449.h5"
+        # model_path_relative = "model/afdet_rmsprop_50_02365.h5"
         model_path_full = os.path.join(LOCAL_ROOT, model_path_relative)
         model = load_model(model_path_full)
         st.write(model_path_relative)
@@ -120,43 +121,22 @@ def clear_predicted_session_state():
     st.session_state.pop("tensorflow_predictions", None)
     st.session_state.pop("top_k_class_probs", None)
 
-
-""" make for preset image url when click and paste the url into the text box
-f16
-https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/F-16_June_2008.jpg/640px-F-16_June_2008.jpg
-
-jas39
-https://i.ytimg.com/vi/593_ByYImpY/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLCW2W2vy7kYqPkyE1EJP1-9cJEEug
-
-b2
-https://upload.wikimedia.org/wikipedia/commons/a/a1/B-2_Spirits_on_Deployment_to_Indo-Asia-Pacific.jpg
-
-usa jp
-https://i.ytimg.com/vi/_u63ZbSBC3s/maxresdefault.jpg
-
-usa carrier
-https://i.redd.it/w8pda1cjkyz71.jpg
-
-f18 v2
-https://f.ptcdn.info/230/047/000/ogmwin1fuCUmcaipMsh-o.jpg
-
-su57
-https://ik.imagekit.io/po8th4g4eqj/prod/tr:h-630,w-1200/sukhoi-aircraft-1080x720px.jpg
-"""
-
-
-
-
-
-
-
-
-
-
+# Preset image URLs
+preset_images = {
+    "f16": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/F-16_June_2008.jpg/640px-F-16_June_2008.jpg",
+    "jas39": "https://i.ytimg.com/vi/593_ByYImpY/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLCW2W2vy7kYqPkyE1EJP1-9cJEEug",
+    "b2": "https://upload.wikimedia.org/wikipedia/commons/a/a1/B-2_Spirits_on_Deployment_to_Indo-Asia-Pacific.jpg",
+    "su57": "https://ik.imagekit.io/po8th4g4eqj/prod/tr:h-630,w-1200/sukhoi-aircraft-1080x720px.jpg",
+    "f18_b2": "https://f.ptcdn.info/230/047/000/ogmwin1fuCUmcaipMsh-o.jpg",
+    "usa_jp": "https://i.ytimg.com/vi/_u63ZbSBC3s/maxresdefault.jpg",
+    "usa_carrier": "https://i.redd.it/w8pda1cjkyz71.jpg",
+}
 
 
 def main():
-    st.title("Airforce Detector")
+    st.markdown("""<h1 class="title">AF<span style="color: cyan;">Det</span> | Airforce Detector</h1>""", unsafe_allow_html=True)
+    st.write("`Detect & Classify military aircraft using AI models.`")
+
     
     ai_choice = ["TensorFlow (Classification 1 class)", "YOLO (Detection multiple classes)"]
     selected_ai = st.selectbox("Select AI model", ai_choice)
@@ -201,34 +181,51 @@ def main():
                         predictions, top_k_class_probs = tensorflow_detect_objects(image, top_k)
                         st.session_state["tensorflow_predictions"] = predictions
                         st.session_state["top_k_class_probs"] = top_k_class_probs
-                        st.write(f"Top {top_k} predictions:")
                       
                       
     elif selected_option == "Image URL":
-        image_url = st.text_input("Enter image URL")
-        if st.button("Detect Aircraft") and image_url:
-            clear_predicted_session_state()
-            image = load_image_from_url(image_url)
-            # Store the original image only once
-            if "original_img" not in st.session_state:
-                st.session_state["original_img"] = image
-            # st.image(image, caption="Image from URL.", use_container_width=True)
-            with st.spinner("Detecting objects..."):
-                if selected_ai == ai_choice[1]:
-                    annotated_img, results = yolo_detect_objects(image)
-                    class_count = yolo_extract_classes_and_count(results)
-                    st.session_state["annotated_img"] = annotated_img
-                    st.session_state["yolo_class_count"] = class_count
-                else:
-                    top_k = 5
-                    predictions, top_k_class_probs = tensorflow_detect_objects(image, top_k)
-                    st.session_state["tensorflow_predictions"] = predictions
-                    st.session_state["top_k_class_probs"] = top_k_class_probs
-                    st.write(f"Top {top_k} predictions:")
-                    
+        cols_preset_image_url = st.columns(len(preset_images))
+        for i, (name, url) in enumerate(preset_images.items()):
+            with cols_preset_image_url[i]:
+                if st.button(f"preset#{i+1}", help=url):
+                    st.session_state["image_url"] = url
+                    st.rerun()
+
+        image_url = st.text_input("Enter image URL", value=st.session_state.get("image_url", ""))
+    
+        cols_button = st.columns([12,1])
+        with cols_button[0]:  
+            if st.button("Detect Aircraft"):
+                if not image_url:
+                    st.error("** Please enter an image URL. **")
+                    return
+                clear_predicted_session_state()
+                image = load_image_from_url(image_url)
+                # Store the original image only once
+                if "original_img" not in st.session_state:
+                    st.session_state["original_img"] = image
+                # st.image(image, caption="Image from URL.", use_container_width=True)
+                with st.spinner("Detecting objects..."):
+                    if selected_ai == ai_choice[1]:
+                        annotated_img, results = yolo_detect_objects(image)
+                        class_count = yolo_extract_classes_and_count(results)
+                        st.session_state["annotated_img"] = annotated_img
+                        st.session_state["yolo_class_count"] = class_count
+                    else:
+                        top_k = 5
+                        predictions, top_k_class_probs = tensorflow_detect_objects(image, top_k)
+                        st.session_state["tensorflow_predictions"] = predictions
+                        st.session_state["top_k_class_probs"] = top_k_class_probs
+                        
                 
-        elif not image_url:
+        with cols_button[1]:
+            if image_url and st.button("❌"):
+                    st.session_state["image_url"] = ""
+                    st.rerun()
+        
+        if not image_url:
             st.warning("Please enter an image URL.")
+                
 
     # Display original image if available
     if "original_img" in st.session_state:
