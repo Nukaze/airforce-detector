@@ -85,12 +85,10 @@ def tensorflow_aircraft_class_names():
 
 def tensorflow_detect_objects(image, top_k=10):
     try:
-        
-        model_path_relative = "model/mini_afdet_simplest_0054.h5"
+        model_path_relative = "model/AvinashNath2_rmsprop_02449.h5"
         model_path_full = os.path.join(LOCAL_ROOT, model_path_relative)
         model = load_model(model_path_full)
-        # model.save("recomplie_model.h5")
-        # st.write(model.summary())
+        st.write(model_path_relative)
     except Exception as e:
         st.warning(f"Please try again.")
         st.error(f"Error loading TensorFlow model: {e}")
@@ -101,8 +99,9 @@ def tensorflow_detect_objects(image, top_k=10):
     if image.mode != "RGB":
         image = image.convert("RGB")                                # Convert to RGB mode
         
+    w, h = 150, 150
     # Preprocess the image
-    image_array = np.array(image.resize((224, 224))) / 255.0        # Resize and normalize the image
+    image_array = np.array(image.resize((w, h))) / 255.0            # Resize and normalize the image
     image_array = np.expand_dims(image_array, axis=0)               # Add batch dimension 
 
     predictions = model.predict(image_array)                        # Perform prediction
@@ -120,6 +119,41 @@ def clear_predicted_session_state():
     st.session_state.pop("yolo_class_count", None)
     st.session_state.pop("tensorflow_predictions", None)
     st.session_state.pop("top_k_class_probs", None)
+
+
+""" make for preset image url when click and paste the url into the text box
+f16
+https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/F-16_June_2008.jpg/640px-F-16_June_2008.jpg
+
+jas39
+https://i.ytimg.com/vi/593_ByYImpY/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLCW2W2vy7kYqPkyE1EJP1-9cJEEug
+
+b2
+https://upload.wikimedia.org/wikipedia/commons/a/a1/B-2_Spirits_on_Deployment_to_Indo-Asia-Pacific.jpg
+
+usa jp
+https://i.ytimg.com/vi/_u63ZbSBC3s/maxresdefault.jpg
+
+usa carrier
+https://i.redd.it/w8pda1cjkyz71.jpg
+
+f18 v2
+https://f.ptcdn.info/230/047/000/ogmwin1fuCUmcaipMsh-o.jpg
+
+su57
+https://ik.imagekit.io/po8th4g4eqj/prod/tr:h-630,w-1200/sukhoi-aircraft-1080x720px.jpg
+"""
+
+
+
+
+
+
+
+
+
+
+
 
 def main():
     st.title("Airforce Detector")
