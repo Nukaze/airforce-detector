@@ -85,9 +85,12 @@ def tensorflow_aircraft_class_names():
 
 def tensorflow_detect_objects(image, top_k=10):
     try:
-        model_path_relative = "model/mini_afdet_0769.h5"
+        
+        model_path_relative = "model/mini_afdet_simplest_0054.h5"
         model_path_full = os.path.join(LOCAL_ROOT, model_path_relative)
         model = load_model(model_path_full)
+        # model.save("recomplie_model.h5")
+        # st.write(model.summary())
     except Exception as e:
         st.warning(f"Please try again.")
         st.error(f"Error loading TensorFlow model: {e}")
@@ -107,9 +110,9 @@ def tensorflow_detect_objects(image, top_k=10):
     
     top_indices = np.argsort(class_probs)[::-1][:top_k]              # Get the indices of the top-k classes
     top_k_class_probs = [(index, class_probs[index]) for index in top_indices]                      # Get the probabilities of the top-k classes
-
        
     return predictions, top_k_class_probs
+
 
 def clear_predicted_session_state():
     st.session_state.pop("original_img", None)
