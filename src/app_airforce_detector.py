@@ -24,7 +24,7 @@ def pre_config() -> None:
     flare_icon = """<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#00ffcc"><path d="M40-440v-80h240v80H40Zm270-154-84-84 56-56 84 84-56 56Zm130-86v-240h80v240h-80Zm210 86-56-56 84-84 56 56-84 84Zm30 154v-80h240v80H680Zm-200 80q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35Zm198 134-84-84 56-56 84 84-56 56Zm-396 0-56-56 84-84 56 56-84 84ZM440-40v-240h80v240h-80Z"/></svg>"""
     airport_icon = """<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#00ffcc"><path d="m330-380 70-20 70 20v-30l-40-30v-100l130 40v-40l-130-80v-88q0-12-9-22t-21-10q-13 0-21.5 10t-8.5 22v88l-130 80v40l130-40v100l-40 30v30ZM606-80q-15 0-26-10.5T569-116q0-8 3-16t9-14q86-92 152.5-196T800-552q0-79-24-147t-66-115q-5-5-7.5-12t-2.5-15q0-17 11-28t28-11q8 0 15.5 3t12.5 9q56 60 84.5 142T880-552q0 121-74.5 242T634-92q-5 6-12.5 9T606-80ZM400-186q122-112 181-203.5T640-552q0-109-69.5-178.5T400-800q-101 0-170.5 69.5T160-552q0 71 59 162.5T400-186Zm0 106Q239-217 159.5-334.5T80-552q0-150 96.5-239T400-880q127 0 223.5 89T720-552q0 100-79.5 217.5T400-80Zm0-472Z"/></svg>"""
     st.set_page_config(
-        page_title=f"AFDet | Air Force Detection",
+        page_title=f"AFDet | Air Force Detector",
         page_icon=air_ticket_icon,
         layout="centered",
         initial_sidebar_state="expanded",
@@ -106,7 +106,7 @@ def tensorflow_detect_objects(image, top_k=10):
 
 
 def main():
-    st.title("Aircraft Detection App")
+    st.title("Airforce Detector")
     
     ai_choice = ["TensorFlow (Classification 1 class)", "YOLO (Detection multiple classes)"]
     selected_ai = st.selectbox("Select AI model", ai_choice)
