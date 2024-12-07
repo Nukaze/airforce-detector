@@ -85,8 +85,7 @@ def tensorflow_aircraft_class_names():
 
 def tensorflow_detect_objects(image, top_k=10):
     try:
-        # model_path_relative = "model/warden_0896.h5"
-        model_path_relative = "model/warden_0726.h5"
+        model_path_relative = "model/mini_afdet_0769.h5"
         model_path_full = os.path.join(LOCAL_ROOT, model_path_relative)
         model = load_model(model_path_full)
     except Exception as e:
@@ -97,7 +96,7 @@ def tensorflow_detect_objects(image, top_k=10):
         
     
     if image.mode != "RGB":
-        image = image.convert("RGB")                                 # Convert to RGB mode
+        image = image.convert("RGB")                                # Convert to RGB mode
         
     # Preprocess the image
     image_array = np.array(image.resize((224, 224))) / 255.0        # Resize and normalize the image
@@ -112,7 +111,12 @@ def tensorflow_detect_objects(image, top_k=10):
        
     return predictions, top_k_class_probs
 
-
+def clear_predicted_session_state():
+    st.session_state.pop("original_img", None)
+    st.session_state.pop("annotated_img", None)
+    st.session_state.pop("yolo_class_count", None)
+    st.session_state.pop("tensorflow_predictions", None)
+    st.session_state.pop("top_k_class_probs", None)
 
 def main():
     st.title("Airforce Detector")
@@ -149,6 +153,7 @@ def main():
             
             if st.button("Detect Aircraft"):
                 with st.spinner("Detecting objects..."):
+                    clear_predicted_session_state()
                     if selected_ai == ai_choice[1]:
                         annotated_img, results = yolo_detect_objects(image)
                         class_count = yolo_extract_classes_and_count(results)
@@ -165,6 +170,7 @@ def main():
     elif selected_option == "Image URL":
         image_url = st.text_input("Enter image URL")
         if st.button("Detect Aircraft") and image_url:
+            clear_predicted_session_state()
             image = load_image_from_url(image_url)
             # Store the original image only once
             if "original_img" not in st.session_state:
