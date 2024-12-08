@@ -40,15 +40,17 @@ def load_image_from_url(url):
     return img
     
 # Function to perform object detection on the image
-def yolo_detect_objects(image):
-    model_path = os.path.join(LOCAL_ROOT, "model/yolov8m_0883_best.pt")
-    model = YOLO(model_path)
+def yolo_detect_objects(image, model_path="model/yolov8m_0883_best.pt", conf=0.25):
+    model_fullpath = os.path.join(LOCAL_ROOT, model_path)
+    model = YOLO(model_fullpath)
     try:
         model.to("cuda")
+        print("Model loaded on GPU.")
     except Exception as e:
         model.to("cpu")
+        print("Model loaded on CPU.")
         
-    results = model(image, conf=.25, show=False, stream=False)  # Perform detection
+    results = model(image, conf=conf, show=False, stream=False)  # Perform detection
     annotated_image_bgr = results[0].plot()  # Get annotated image
     # convert the annotated image to PIL format bgr to rgb
     annotated_image_rgb = Image.fromarray(cv2.cvtColor(annotated_image_bgr, cv2.COLOR_BGR2RGB))
@@ -129,16 +131,26 @@ preset_images = {
     "su57": "https://ik.imagekit.io/po8th4g4eqj/prod/tr:h-630,w-1200/sukhoi-aircraft-1080x720px.jpg",
     "f18_b2": "https://f.ptcdn.info/230/047/000/ogmwin1fuCUmcaipMsh-o.jpg",
     "usa_jp": "https://i.ytimg.com/vi/_u63ZbSBC3s/maxresdefault.jpg",
-    "usa_carrier": "https://i.redd.it/w8pda1cjkyz71.jpg",
+    "usa_carrier": "https://i.redd.it/w8pda1cjkyz71.jpg",    
 }
-
+preset_drone_images = {
+    "drone1": "https://cdn.britannica.com/51/230351-050-22CE6838/Military-drones.jpg",
+    "drone2": "https://www.shutterstock.com/image-photo/soldier-uav-operator-launches-army-600nw-2489481047.jpg",
+    "drone3": "https://thedefensepost.com/wp-content/uploads/2022/04/original-5.jpg",
+    "drone4": "https://t3.ftcdn.net/jpg/10/07/33/32/360_F_1007333283_AjZOc6hgmr5ueaGhMKE5JUOjcARbXFCr.jpg",
+    "drone5": "https://thedefensepost.com/wp-content/uploads/2024/07/drone-swarm.jpg",
+}
 
 def main():
     st.markdown("""<h1 class="title">AF<span style="color: cyan;">Det</span> | Airforce Detector</h1>""", unsafe_allow_html=True)
     st.write("`Detect & Classify military aircraft using AI models.`")
 
     
-    ai_choice = ["TensorFlow (Classification 1 class)", "YOLO (Detection multiple classes)"]
+    ai_choice = [
+        "TensorFlow Aircraft Classification",
+        "YOLO Aircraft Detection",
+        "(✨ New ✨) YOLO Drone Detection "
+    ]
     selected_ai = st.selectbox("Select AI model", ai_choice)
     
     if "selected_ai" in st.session_state and st.session_state["selected_ai"] != selected_ai:
@@ -171,23 +183,38 @@ def main():
             if st.button("Detect Aircraft"):
                 with st.spinner("Detecting objects..."):
                     clear_predicted_session_state()
-                    if selected_ai == ai_choice[1]:
-                        annotated_img, results = yolo_detect_objects(image)
-                        class_count = yolo_extract_classes_and_count(results)
-                        st.session_state["annotated_img"] = annotated_img
-                        st.session_state["yolo_class_count"] = class_count
-                    else:
+                    
+                    if selected_ai == ai_choice[0]:
                         top_k = 5
                         predictions, top_k_class_probs = tensorflow_detect_objects(image, top_k)
                         st.session_state["tensorflow_predictions"] = predictions
                         st.session_state["top_k_class_probs"] = top_k_class_probs
+                    
+                    elif selected_ai == ai_choice[1]:
+                        annotated_img, results = yolo_detect_objects(image, model_path="model/yolov8m_0883_best.pt")
+                        class_count = yolo_extract_classes_and_count(results)
+                        st.session_state["annotated_img"] = annotated_img
+                        st.session_state["yolo_class_count"] = class_count
+                        
+                    elif (selected_ai == ai_choice[2]):
+                        # st.info("Drone Detection is under development.")
+                        annotated_img, results = yolo_detect_objects(image, model_path="model/yolov11n_drone_0986.pt")
+                        class_count = yolo_extract_classes_and_count(results)
+                        st.session_state["annotated_img"] = annotated_img
+                        st.session_state["yolo_class_count"] = class_count
                       
                       
     elif selected_option == "Image URL":
         cols_preset_image_url = st.columns(len(preset_images))
         for i, (name, url) in enumerate(preset_images.items()):
             with cols_preset_image_url[i]:
-                if st.button(f"preset#{i+1}", help=url):
+                if st.button(f"Aircraft {i+1}", help=url):
+                    st.session_state["image_url"] = url
+                    st.rerun()
+        cols_preset_drone_image_url = st.columns(len(preset_drone_images))
+        for i, (name, url) in enumerate(preset_drone_images.items()):
+            with cols_preset_drone_image_url[i]:
+                if st.button(f"Preset Drone {i+1}", help=url):
                     st.session_state["image_url"] = url
                     st.rerun()
 
@@ -206,16 +233,26 @@ def main():
                     st.session_state["original_img"] = image
                 # st.image(image, caption="Image from URL.", use_container_width=True)
                 with st.spinner("Detecting objects..."):
-                    if selected_ai == ai_choice[1]:
-                        annotated_img, results = yolo_detect_objects(image)
-                        class_count = yolo_extract_classes_and_count(results)
-                        st.session_state["annotated_img"] = annotated_img
-                        st.session_state["yolo_class_count"] = class_count
-                    else:
+                    
+                    if (selected_ai == ai_choice[0]):
                         top_k = 5
                         predictions, top_k_class_probs = tensorflow_detect_objects(image, top_k)
                         st.session_state["tensorflow_predictions"] = predictions
                         st.session_state["top_k_class_probs"] = top_k_class_probs
+                    
+                    elif (selected_ai == ai_choice[1]):
+                        annotated_img, results = yolo_detect_objects(image, model_path="model/yolov8m_0883_best.pt")
+                        class_count = yolo_extract_classes_and_count(results)
+                        print("YOLOAircraft Annotated Image: ", annotated_img)
+                        st.session_state["annotated_img"] = annotated_img
+                        st.session_state["yolo_class_count"] = class_count
+                    
+                    elif (selected_ai == ai_choice[2]):
+                        annotated_img, results = yolo_detect_objects(image, model_path="model/yolov11n_drone_0986.pt")
+                        class_count = yolo_extract_classes_and_count(results)
+                        print("YOLODrone Annotated Image: ", annotated_img)
+                        st.session_state["annotated_img"] = annotated_img
+                        st.session_state["yolo_class_count"] = class_count         
                         
                 
         with cols_button[1]:
@@ -232,11 +269,11 @@ def main():
         st.image(st.session_state["original_img"], caption="Original Image.", use_container_width=True)
     
     # Render results only if detection was performed
-    if "annotated_img" in st.session_state and ai_choice[1] in selected_ai:
+    if "annotated_img" in st.session_state and selected_ai in [ai_choice[1], ai_choice[2]]:
         st.image(st.session_state["annotated_img"], caption="Detection Results with Bounding Boxes.", use_container_width=True)
         st.write("Detected objects:")
 
-    if ai_choice[1] in selected_ai and "yolo_class_count" in st.session_state:
+    if selected_ai in [ai_choice[1], ai_choice[2]] and "yolo_class_count" in st.session_state:
         # Unique key based on option and AI selection
         result_text_style = st.segmented_control(
             "Select result text style", 
