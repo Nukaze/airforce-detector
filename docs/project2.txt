@@ -1,0 +1,9 @@
+[Project2]
+Medium:
+https://medium.com/@peamz4x/simple-easy-way-to-make-object-detection-models-with-roboflow-and-kaggle-c19429c540b8
+
+Roboflow:
+https://universe.roboflow.com/dronepictures/drone-pictures
+
+Model:
+https://drive.google.com/drive/folders/1CUcBM4oXU2zUlfDsiHfpVbvseCJWJzBy

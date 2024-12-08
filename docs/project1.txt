@@ -1,0 +1,14 @@
+[Project1]
+Medium: 
+https://nukaze.medium.com/building-a-convolutional-neural-network-cnn-model-for-military-aircraft-detection-via-image-ec4dad3ca23a
+
+Repo: 
+https://github.com/Nukaze/airforce-detector
+(
+	dataset(10gb): https://www.kaggle.com/datasets/a2015003713/militaryaircraftdetectiondataset
+	train: src/train_cnn_model_kaggle.ipynb
+	demo: src/app_airforce_detector.py
+)
+
+Demo:
+https://airforce-detector.streamlit.app/
