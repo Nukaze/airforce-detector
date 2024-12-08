@@ -1,0 +1,5 @@
+names:
+- drone
+nc: 1
+train: /kaggle/working/dataset/train
+val: /kaggle/working/dataset/val
