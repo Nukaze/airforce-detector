@@ -9,6 +9,5 @@ matplotlib
 ultralytics
 kagglehub
 joblib
-opencv-python
 opencv-python-headless
 dill
