@@ -11,3 +11,4 @@ kagglehub
 joblib
 opencv-python-headless
 dill
+lightgbm
