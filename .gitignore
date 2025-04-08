@@ -161,3 +161,7 @@ cython_debug/
 data/yahoo_massive_stock_data_2018-2023_preprocessed.csv
 data/archive_aircraft.zip
 /data/archive_aircraft
+
+
+
+/data/aircraft_dataset/*
