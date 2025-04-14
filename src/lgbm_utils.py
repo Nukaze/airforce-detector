@@ -55,13 +55,19 @@ class BaseAircraftDetector:
             Feature vector
         """
         # Resize image to standard size
-        image = cv2.resize(image, (64, 64))
+        image = cv2.resize(image, (32, 32))  # Reduced from 64x64 to 32x32
         
         # Convert to grayscale
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         
-        # Extract HOG features
-        hog = cv2.HOGDescriptor()
+        # Extract HOG features with adjusted parameters
+        win_size = (32, 32)  # Match the resized image size
+        block_size = (16, 16)
+        block_stride = (8, 8)
+        cell_size = (8, 8)
+        nbins = 9
+        
+        hog = cv2.HOGDescriptor(win_size, block_size, block_stride, cell_size, nbins)
         hog_features = hog.compute(gray)
         
         # Extract color histogram features
